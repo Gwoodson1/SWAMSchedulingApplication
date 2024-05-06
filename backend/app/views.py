@@ -1,5 +1,6 @@
 from flask import render_template, redirect, url_for
 
+
 def init_views(app):
     @app.route('/')
     def index():
