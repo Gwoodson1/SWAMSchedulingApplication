@@ -1,6 +1,6 @@
 
 import pytest
-from app.controllers.swimmer_crud import add_swimmer
+from app.controllers.LessonController import add_swimmer
 
 @pytest.fixture
 def test_swimmer_data():
