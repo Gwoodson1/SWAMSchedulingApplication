@@ -1,6 +1,6 @@
 from flask import request, jsonify, abort
-from models import db, Swimmer, Parent, Instructor, Lesson
-from app import app
+from app.models import db, Swimmer, Parent, Instructor, Lesson
+from app.run import app
 
 #Create, Read, Update, Delete Methods for Swimmer
 @app.route('/swimmers', methods=['POST'])

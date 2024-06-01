@@ -1,6 +1,6 @@
 from flask import request, jsonify, abort
 from models import db, Swimmer, Parent, Instructor, Lesson
-from app import app
+from app.run import app
 
 
 #CRUD for instructor
