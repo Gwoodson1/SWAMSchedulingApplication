@@ -1,4 +1,4 @@
-from flask import request, jsonify, abort
+from flask import request, Request, jsonify, abort #B added Request
 from app.models import db, Swimmer, Parent, Instructor, Lesson
 from app.run import app
 
@@ -6,6 +6,7 @@ from app.run import app
 @app.route('/swimmers', methods=['POST'])
 def add_swimmer():
     data = request.get_json()
+    #data = Request.get_json(force=False, silent=False, cache=True)
     new_swimmer = Swimmer(name=data['name'], level=data['level'], special_needs=data.get('special_needs', None))
     db.session.add(new_swimmer)
     db.session.commit()
