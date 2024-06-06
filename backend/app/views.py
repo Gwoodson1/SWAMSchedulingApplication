@@ -1,7 +1,7 @@
 # app/views.py
 from flask import Blueprint, jsonify, request
-from app.controller.user_controller import get_users, create_user, update_user, delete_user
-from app.controller.lesson_controller import get_lessons, create_lesson, update_lesson, delete_lesson
+from app.controllers.instructor_crud import get_users, create_user, update_user, delete_user
+from app.controllers.lesson_crud import get_lessons, create_lesson, update_lesson, delete_lesson
 # Import other controllers as needed
 
 # Initialize Blueprint
