@@ -1,6 +1,6 @@
 
 import pytest
-from app.controllers.ParentController import add_swimmer
+from backend.app.controllers.ParentController import create_parent
 
 @pytest.fixture
 def test_swimmer_data():

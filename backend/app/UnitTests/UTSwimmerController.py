@@ -1,5 +1,5 @@
 import pytest
-import app.controllers.SwimmerController as Swimmer
+import backend.app.controllers.SwimmerController as Swimmer
 
 @pytest.fixture
 def test_swimmer_data():
