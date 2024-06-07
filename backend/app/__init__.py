@@ -1,6 +1,5 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from .views import init_views
 
 db = SQLAlchemy()
 
@@ -14,6 +13,7 @@ def create_app():
     with app.app_context():
         db.create_all()  # Create sql tables for our data models
 
-    init_views(app)  # Initialize views
+    from .views import api_bp  # Import blueprint here
+    app.register_blueprint(api_bp, url_prefix='/api')  # Register blueprint
 
     return app
