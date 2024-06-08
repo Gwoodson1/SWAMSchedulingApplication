@@ -9,7 +9,7 @@ def create_swimmer(data):
     return new_swimmer
 
 def update_swimmer(swimmer_id, data):
-    swimmer = Swimmer.query.get(swimmer_id)
+    swimmer = db.session.get(Swimmer, swimmer_id)
     if swimmer:
         for key, value in data.items():
             setattr(swimmer, key, value)
@@ -17,7 +17,7 @@ def update_swimmer(swimmer_id, data):
     return swimmer
 
 def delete_swimmer(swimmer_id):
-    swimmer = Swimmer.query.get(swimmer_id)
+    swimmer = db.session.get(Swimmer, swimmer_id)
     if swimmer:
         db.session.delete(swimmer)
         db.session.commit()

@@ -1,4 +1,3 @@
-
 import pytest
 from backend.app.controllers.InstructorController import create_instructor
 

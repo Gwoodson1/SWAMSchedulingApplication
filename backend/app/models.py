@@ -34,7 +34,7 @@ class Swimmer(db.Model):
     __tablename__ = 'swimmers'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    level = db.Column(db.String(100), nullable=False)
+    level = db.Column(db.Integer, nullable=False)
     special_needs = db.Column(db.String(200), nullable=True)
     parent_id = db.Column(db.Integer, db.ForeignKey('parents.id'))
     parent = db.relationship('Parent', back_populates='children')
