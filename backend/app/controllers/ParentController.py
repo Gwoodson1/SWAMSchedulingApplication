@@ -1,12 +1,20 @@
 # app/controllers/ParentController.py
 from .. import db
-from ..models import Parent  # Assuming you have a model for Parent
+from ..models import Parent
 
 def create_parent(data):
     new_parent = Parent(**data)
     db.session.add(new_parent)
     db.session.commit()
     return new_parent
+
+def read_parent(parent_id):
+    parent = db.session.get(Parent, parent_id)
+    return parent
+    
+def read_parents():
+    list_of_parents = [o for o in db.session.query(Parent).all()]
+    return list_of_parents
 
 def update_parent(parent_id, data):
     parent = Parent.query.get(parent_id)

@@ -16,6 +16,7 @@ class User(db.Model):
 class Parent(User):
     __tablename__ = 'parents'
     id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
     children = db.relationship('Swimmer', back_populates='parent')
     __mapper_args__ = {
         'polymorphic_identity': 'parent',
@@ -24,7 +25,6 @@ class Parent(User):
 class Instructor(User):
     __tablename__ = 'instructors'
     id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    cert_time = db.Column(db.String(100), nullable=False)  # Certification expiration time
     lessons = db.relationship('Lesson', back_populates='instructor')
     __mapper_args__ = {
         'polymorphic_identity': 'instructor',
