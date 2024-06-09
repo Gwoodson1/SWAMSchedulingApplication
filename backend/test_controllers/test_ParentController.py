@@ -19,7 +19,6 @@ def test_parent_data():
         'username': 'MOmar@gmail.com',
         'password': 'Kalil123',
         'name': 'Mohammed Omar',
-        'children': [Swimmer.read_swimmer(23)], 
     }
 
 '''
@@ -43,14 +42,10 @@ def test_updated_parent_data():
 
 def test_create_parent(app, test_parent_data, test_swimmer_data):
     with app.app_context():
+        new_parent = Parent.create_parent(test_parent_data)
         swimmer = Swimmer.create_swimmer(test_swimmer_data)
-        new_parent = Parent.create_parent({
-        'id': 45,
-        'username': 'MOmar@gmail.com',
-        'password': 'Kalil123',
-        'name': 'Mohammed Omar',
-        'children': [swimmer], 
-         })
+        new_parent.children = [swimmer]
+
         assert new_parent.id == 45
         assert new_parent.username == 'MOmar@gmail.com'
         assert new_parent.password == 'Kalil123'
