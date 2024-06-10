@@ -16,6 +16,7 @@ class User(db.Model):
 class Parent(User):
     __tablename__ = 'parents'
     id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
     children = db.relationship('Swimmer', back_populates='parent')
     __mapper_args__ = {
         'polymorphic_identity': 'parent',
@@ -24,7 +25,6 @@ class Parent(User):
 class Instructor(User):
     __tablename__ = 'instructors'
     id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    cert_time = db.Column(db.String(100), nullable=False)  # Certification expiration time
     lessons = db.relationship('Lesson', back_populates='instructor')
     __mapper_args__ = {
         'polymorphic_identity': 'instructor',
@@ -34,7 +34,7 @@ class Swimmer(db.Model):
     __tablename__ = 'swimmers'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    level = db.Column(db.String(100), nullable=False)
+    level = db.Column(db.Integer, nullable=False)
     special_needs = db.Column(db.String(200), nullable=True)
     parent_id = db.Column(db.Integer, db.ForeignKey('parents.id'))
     parent = db.relationship('Parent', back_populates='children')
@@ -43,7 +43,7 @@ class Swimmer(db.Model):
 class Lesson(db.Model):
     __tablename__ = 'lessons'
     id = db.Column(db.Integer, primary_key=True)
-    lesson_time = db.Column(db.DateTime, nullable=False)
+    lesson_time = db.Column(db.DateTime, nullable=True) #does this really have to be a special data type?
     swimmer_id = db.Column(db.Integer, db.ForeignKey('swimmers.id'))
     instructor_id = db.Column(db.Integer, db.ForeignKey('instructors.id'))
     swimmer = db.relationship('Swimmer', back_populates='lessons')
