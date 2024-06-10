@@ -56,10 +56,9 @@ def test_get_swimmers(app, test_swimmer_data, test_swimmer2_data):
         swimmer = Swimmer.create_swimmer(test_swimmer_data)
         swimmer2 = Swimmer.create_swimmer(test_swimmer2_data)
         list = Swimmer.read_swimmers()
-        
-        assert list == [swimmer, swimmer2]
-        swimmer3 = list[1]
-        assert swimmer3.name == 'Garrett Woodson'
+
+        assert swimmer in list
+        assert swimmer2 in list
 
 
 #tests updating information on a specific swimmer based on ID

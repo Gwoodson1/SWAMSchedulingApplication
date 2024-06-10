@@ -17,7 +17,7 @@ def read_parents():
     return list_of_parents
 
 def update_parent(parent_id, data):
-    parent = Parent.query.get(parent_id)
+    parent = db.session.get(Parent, parent_id)
     if parent:
         for key, value in data.items():
             setattr(parent, key, value)
@@ -25,7 +25,7 @@ def update_parent(parent_id, data):
     return parent
 
 def delete_parent(parent_id):
-    parent = Parent.query.get(parent_id)
+    parent = db.session.get(Parent, parent_id)
     if parent:
         db.session.delete(parent)
         db.session.commit()
