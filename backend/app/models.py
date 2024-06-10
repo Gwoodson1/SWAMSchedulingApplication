@@ -43,7 +43,7 @@ class Swimmer(db.Model):
 class Lesson(db.Model):
     __tablename__ = 'lessons'
     id = db.Column(db.Integer, primary_key=True)
-    lesson_time = db.Column(db.DateTime, nullable=False)
+    lesson_time = db.Column(db.DateTime, nullable=True) #does this really have to be a special data type?
     swimmer_id = db.Column(db.Integer, db.ForeignKey('swimmers.id'))
     instructor_id = db.Column(db.Integer, db.ForeignKey('instructors.id'))
     swimmer = db.relationship('Swimmer', back_populates='lessons')
