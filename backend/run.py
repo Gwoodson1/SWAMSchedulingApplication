@@ -1,4 +1,5 @@
-from app import create_app
+from flask import Flask, send_from_directory
+from backend.app import create_app
 
 app = create_app()
 
