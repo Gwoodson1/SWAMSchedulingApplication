@@ -21,6 +21,14 @@ class Parent(User):
     __mapper_args__ = {
         'polymorphic_identity': 'parent',
     }
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'name': self.name,
+            # Include additional fields as necessary
+            'children': [child.to_dict() for child in self.children] if self.children else []
+        }
 
 class Instructor(User):
     __tablename__ = 'instructors'

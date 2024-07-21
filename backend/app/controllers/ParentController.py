@@ -3,18 +3,23 @@ from .. import db
 from ..models import Parent
 
 def create_parent(data):
-    new_parent = Parent(**data)
+    username = data.get('username')
+    password = data.get('password')
+    name = data.get('name')
+    if not username or not password or not name:
+        raise ValueError("Username, password, and name are required")
+
+    new_parent = Parent(username=username, password=password, name=name)
     db.session.add(new_parent)
     db.session.commit()
-    return new_parent
+    return new_parent.to_dict()
 
 def read_parent(parent_id):
     parent = db.session.get(Parent, parent_id)
-    return parent
-    
-def read_parents():
-    list_of_parents = [o for o in db.session.query(Parent).all()]
-    return list_of_parents
+    return parent.to_dict() if parent else None
+
+def get_all_parents():
+    return [parent.to_dict() for parent in Parent.query.all()]
 
 def update_parent(parent_id, data):
     parent = db.session.get(Parent, parent_id)
@@ -22,10 +27,11 @@ def update_parent(parent_id, data):
         for key, value in data.items():
             setattr(parent, key, value)
         db.session.commit()
-    return parent
+    return parent.to_dict() if parent else None
 
 def delete_parent(parent_id):
     parent = db.session.get(Parent, parent_id)
     if parent:
         db.session.delete(parent)
         db.session.commit()
+    return parent.to_dict() if parent else None

@@ -82,7 +82,7 @@ def test_get_parents(app, test_parent_data, test_parent2_data):
     with app.app_context():
         parent = Parent.create_parent(test_parent_data)
         parent2 = Parent.create_parent(test_parent2_data)
-        list = Parent.read_parents()
+        list = Parent.get_all_parents()
         
         assert parent in list
         assert parent2 in list
