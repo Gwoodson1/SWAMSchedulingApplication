@@ -35,3 +35,13 @@ def delete_parent(parent_id):
         db.session.delete(parent)
         db.session.commit()
     return parent.to_dict() if parent else None
+
+def update_parent_by_username(username, data):
+    parent = Parent.query.filter_by(username=username).first()
+    if parent:
+        if 'password' in data:
+            parent.password = data['password']
+        if 'name' in data:
+            parent.name = data['name']
+        db.session.commit()
+    return parent.to_dict() if parent else None

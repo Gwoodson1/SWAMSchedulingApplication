@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
+from .models import Parent
 from .controllers.InstructorController import create_instructor, update_instructor, delete_instructor
-from .controllers.ParentController import create_parent, update_parent, delete_parent, get_all_parents
+from .controllers.ParentController import create_parent, update_parent, delete_parent, get_all_parents, update_parent_by_username
 
 # Initialize Blueprint
 api_bp = Blueprint('api', __name__)
@@ -72,3 +73,25 @@ def remove_parent(parent_id):
         print(f"Error in remove_parent: {str(e)}")
         return jsonify(error=str(e)), 500
 
+@api_bp.route('/parents/username/<string:username>', methods=['GET'])
+def get_parent_by_username(username):
+    try:
+        parent = Parent.query.filter_by(username=username).first()
+        if parent:
+            return jsonify(parent.to_dict()), 200
+        else:
+            return jsonify(error="Parent not found"), 404
+    except Exception as e:
+        print(f"Error in get_parent_by_username: {str(e)}")
+        return jsonify(error=str(e)), 500
+
+@api_bp.route('/parents/username/<string:username>', methods=['PUT'])
+def modify_parent_by_username(username):
+    try:
+        parent_data = request.json
+        updated_parent = update_parent_by_username(username, parent_data)
+        return jsonify(updated_parent), 200
+    except Exception as e:
+        print(f"Error in modify_parent_by_username: {str(e)}")
+        return jsonify(error=str(e)), 500
+  

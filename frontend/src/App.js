@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { Container, Typography, AppBar, Toolbar } from '@mui/material';
-import ExampleComponent from './components/ExampleComponent';
+import ParentAPIComponent from './components/ParentAPIComponent';
 
 function App() {
   return (
@@ -13,7 +13,7 @@ function App() {
       </AppBar>
       <Container>
         <Routes>
-          <Route path="/example" element={<ExampleComponent />} />
+          <Route path="/parents" element={<ParentAPIComponent />} />
           {/* Add more routes as needed */}
         </Routes>
       </Container>
