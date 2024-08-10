@@ -13,30 +13,42 @@ class User(db.Model):
         'polymorphic_on': type
     }
 
-class Parent(User):
-    __tablename__ = 'parents'
-    id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    children = db.relationship('Swimmer', back_populates='parent')
-    __mapper_args__ = {
-        'polymorphic_identity': 'parent',
-    }
     def to_dict(self):
         return {
             'id': self.id,
             'username': self.username,
-            'name': self.name,
-            # Include additional fields as necessary
-            'children': [child.to_dict() for child in self.children] if self.children else []
+            'type': self.type,
+        }
+
+class Parent(User):
+    __tablename__ = 'parents'
+    id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    __mapper_args__ = {
+        'polymorphic_identity': 'parent',
+    }
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'name': self.name
         }
 
 class Instructor(User):
     __tablename__ = 'instructors'
     id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    lessons = db.relationship('Lesson', back_populates='instructor')
+    name = db.Column(db.String(100), nullable=False)
     __mapper_args__ = {
         'polymorphic_identity': 'instructor',
     }
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'username': self.username,
+            'name': self.name
+        }
 
 class Swimmer(db.Model):
     __tablename__ = 'swimmers'
@@ -44,15 +56,58 @@ class Swimmer(db.Model):
     name = db.Column(db.String(100), nullable=False)
     level = db.Column(db.Integer, nullable=False)
     special_needs = db.Column(db.String(200), nullable=True)
-    parent_id = db.Column(db.Integer, db.ForeignKey('parents.id'))
-    parent = db.relationship('Parent', back_populates='children')
-    lessons = db.relationship('Lesson', back_populates='swimmer')
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'name': self.name,
+            'level': self.level,
+            'special_needs': self.special_needs
+        }
 
 class Lesson(db.Model):
     __tablename__ = 'lessons'
     id = db.Column(db.Integer, primary_key=True)
-    lesson_time = db.Column(db.DateTime, nullable=True) #does this really have to be a special data type?
+    lesson_time = db.Column(db.String, nullable=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'lesson_time': self.lesson_time
+        }
+
+class SwimmerLesson(db.Model):  # Association Table
+    __tablename__ = 'swimmer_lessons'
+    id = db.Column(db.Integer, primary_key=True)
     swimmer_id = db.Column(db.Integer, db.ForeignKey('swimmers.id'))
+    lesson_id = db.Column(db.Integer, db.ForeignKey('lessons.id'))
+
+    def to_dict(self):
+        return {
+            'swimmer_id': self.swimmer_id,
+            'lesson_id': self.lesson_id
+        }
+
+class InstructorLesson(db.Model):  # Association Table
+    __tablename__ = 'instructor_lessons'
+    id = db.Column(db.Integer, primary_key=True)
     instructor_id = db.Column(db.Integer, db.ForeignKey('instructors.id'))
-    swimmer = db.relationship('Swimmer', back_populates='lessons')
-    instructor = db.relationship('Instructor', back_populates='lessons')
+    lesson_id = db.Column(db.Integer, db.ForeignKey('lessons.id'))
+
+    def to_dict(self):
+        return {
+            'instructor_id': self.instructor_id,
+            'lesson_id': self.lesson_id
+        }
+
+class ParentSwimmer(db.Model):  # Association Table
+    __tablename__ = 'parent_swimmers'
+    id = db.Column(db.Integer, primary_key=True)
+    parent_id = db.Column(db.Integer, db.ForeignKey('parents.id'))
+    swimmer_id = db.Column(db.Integer, db.ForeignKey('swimmers.id'))
+
+    def to_dict(self):
+        return {
+            'parent_id': self.parent_id,
+            'swimmer_id': self.swimmer_id
+        }
