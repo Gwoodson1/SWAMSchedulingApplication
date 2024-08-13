@@ -24,6 +24,7 @@ class Parent(User):
     __tablename__ = 'parents'
     id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     name = db.Column(db.String(100), nullable=False)
+    swimmers = db.relationship('ParentSwimmer', back_populates='parent', cascade='all, delete-orphan')
     __mapper_args__ = {
         'polymorphic_identity': 'parent',
     }
@@ -39,6 +40,7 @@ class Instructor(User):
     __tablename__ = 'instructors'
     id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     name = db.Column(db.String(100), nullable=False)
+    lessons = db.relationship('InstructorLesson', back_populates='instructor', cascade='all, delete-orphan')
     __mapper_args__ = {
         'polymorphic_identity': 'instructor',
     }
@@ -56,6 +58,8 @@ class Swimmer(db.Model):
     name = db.Column(db.String(100), nullable=False)
     level = db.Column(db.Integer, nullable=False)
     special_needs = db.Column(db.String(200), nullable=True)
+    lessons = db.relationship('SwimmerLesson', back_populates='swimmer', cascade='all, delete-orphan')
+    parents = db.relationship('ParentSwimmer', back_populates='swimmer', cascade='all, delete-orphan')
 
     def to_dict(self):
         return {
@@ -68,7 +72,9 @@ class Swimmer(db.Model):
 class Lesson(db.Model):
     __tablename__ = 'lessons'
     id = db.Column(db.Integer, primary_key=True)
-    lesson_time = db.Column(db.String, nullable=True)
+    lesson_time = db.Column(db.String, nullable=True)  # Kept as String for flexibility
+    instructors = db.relationship('InstructorLesson', back_populates='lesson', cascade='all, delete-orphan')
+    swimmers = db.relationship('SwimmerLesson', back_populates='lesson', cascade='all, delete-orphan')
 
     def to_dict(self):
         return {
@@ -78,9 +84,11 @@ class Lesson(db.Model):
 
 class SwimmerLesson(db.Model):  # Association Table
     __tablename__ = 'swimmer_lessons'
-    id = db.Column(db.Integer, primary_key=True)
-    swimmer_id = db.Column(db.Integer, db.ForeignKey('swimmers.id'))
-    lesson_id = db.Column(db.Integer, db.ForeignKey('lessons.id'))
+    swimmer_id = db.Column(db.Integer, db.ForeignKey('swimmers.id'), primary_key=True)
+    lesson_id = db.Column(db.Integer, db.ForeignKey('lessons.id'), primary_key=True)
+
+    swimmer = db.relationship('Swimmer', back_populates='lessons')
+    lesson = db.relationship('Lesson', back_populates='swimmers')
 
     def to_dict(self):
         return {
@@ -90,9 +98,11 @@ class SwimmerLesson(db.Model):  # Association Table
 
 class InstructorLesson(db.Model):  # Association Table
     __tablename__ = 'instructor_lessons'
-    id = db.Column(db.Integer, primary_key=True)
-    instructor_id = db.Column(db.Integer, db.ForeignKey('instructors.id'))
-    lesson_id = db.Column(db.Integer, db.ForeignKey('lessons.id'))
+    instructor_id = db.Column(db.Integer, db.ForeignKey('instructors.id'), primary_key=True)
+    lesson_id = db.Column(db.Integer, db.ForeignKey('lessons.id'), primary_key=True)
+
+    instructor = db.relationship('Instructor', back_populates='lessons')
+    lesson = db.relationship('Lesson', back_populates='instructors')
 
     def to_dict(self):
         return {
@@ -102,9 +112,11 @@ class InstructorLesson(db.Model):  # Association Table
 
 class ParentSwimmer(db.Model):  # Association Table
     __tablename__ = 'parent_swimmers'
-    id = db.Column(db.Integer, primary_key=True)
-    parent_id = db.Column(db.Integer, db.ForeignKey('parents.id'))
-    swimmer_id = db.Column(db.Integer, db.ForeignKey('swimmers.id'))
+    parent_id = db.Column(db.Integer, db.ForeignKey('parents.id'), primary_key=True)
+    swimmer_id = db.Column(db.Integer, db.ForeignKey('swimmers.id'), primary_key=True)
+
+    parent = db.relationship('Parent', back_populates='swimmers')
+    swimmer = db.relationship('Swimmer', back_populates='parents')
 
     def to_dict(self):
         return {

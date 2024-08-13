@@ -7,17 +7,23 @@ const InstructorAPIComponent = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');  
+  const [lessonIds, setLessonIds] = useState(''); // State for lesson IDs
   const [deleteUsername, setDeleteUsername] = useState('');
   const [updateUsername, setUpdateUsername] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newName, setNewName] = useState(''); 
+  const [newLessonIds, setNewLessonIds] = useState(''); // State for updated lesson IDs
   const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await api.get('/instructors');
-        setData(response.data);
+        const instructors = response.data.map(instructor => ({
+          ...instructor,
+          lessons: instructor.lessons || [] // Ensure lessons is always an array
+        }));
+        setData(instructors);
       } catch (error) {
         setError('Error fetching data');
         console.error('Error fetching data:', error);
@@ -28,13 +34,26 @@ const InstructorAPIComponent = () => {
   }, []);
 
   const handleCreateInstructor = async () => {
+    if (!username || !password || !name) {
+      setError('Username, Password, and Name are required');
+      return;
+    }
+
     try {
-      const newInstructor = { username, password, name, type: 'instructor' };
+      const newInstructor = { 
+        username, 
+        password, 
+        name, 
+        type: 'instructor',
+        lesson_ids: lessonIds ? lessonIds.split(',').map(id => parseInt(id.trim())) : [] // Handle multiple lessons
+      };
       const response = await api.post('/instructors', newInstructor);
-      setData([...data, response.data]);
+      setData([...data, { ...response.data, lessons: response.data.lessons || [] }]);
       setUsername('');
       setPassword('');
       setName('');
+      setLessonIds('');
+      setError(null);
     } catch (error) {
       setError('Error creating instructor');
       console.error('Error creating instructor:', error);
@@ -42,12 +61,18 @@ const InstructorAPIComponent = () => {
   };
 
   const handleDeleteInstructor = async () => {
+    if (!deleteUsername) {
+      setError('Username is required to delete');
+      return;
+    }
+
     try {
       const response = await api.get(`/instructors/username/${deleteUsername}`);
       if (response.data && response.data.id) {
         await api.delete(`/instructors/${response.data.id}`);
         setData(data.filter(instructor => instructor.id !== response.data.id));
         setDeleteUsername('');
+        setError(null);
       } else {
         setError('Instructor not found');
       }
@@ -58,16 +83,28 @@ const InstructorAPIComponent = () => {
   };
 
   const handleUpdateInstructor = async () => {
+    if (!updateUsername) {
+      setError('Username is required to update');
+      return;
+    }
+
     try {
       const updateData = {};
       if (newPassword) updateData.password = newPassword;
       if (newName) updateData.name = newName; 
+      if (newLessonIds) updateData.lesson_ids = newLessonIds.split(',').map(id => parseInt(id.trim())); // Handle multiple lessons
 
       const response = await api.put(`/instructors/username/${updateUsername}`, updateData);
-      setData(data.map(instructor => (instructor.id === response.data.id ? response.data : instructor)));
+      setData(data.map(instructor => 
+        instructor.id === response.data.id 
+          ? { ...response.data, lessons: response.data.lessons || [] } // Ensure lessons array is handled safely
+          : instructor
+      ));
       setUpdateUsername('');
       setNewPassword('');
       setNewName(''); 
+      setNewLessonIds('');
+      setError(null);
     } catch (error) {
       setError('Error updating instructor');
       console.error('Error updating instructor:', error);
@@ -77,7 +114,7 @@ const InstructorAPIComponent = () => {
   return (
     <div>
       <h1>Instructors</h1>
-      {error && <p>{error}</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
       {data.length === 0 && !error ? (
         <p>No instructors available</p>
       ) : (
@@ -85,17 +122,19 @@ const InstructorAPIComponent = () => {
           <Table>
             <TableHead>
               <TableRow>
+                <TableCell>ID</TableCell>
                 <TableCell>Username</TableCell>
                 <TableCell>Name</TableCell>
-                <TableCell>Lessons</TableCell>
+                <TableCell>Lesson IDs</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {data.map((instructor) => (
                 <TableRow key={instructor.id}>
+                  <TableCell>{instructor.id}</TableCell>
                   <TableCell>{instructor.username}</TableCell>
                   <TableCell>{instructor.name}</TableCell> 
-                  <TableCell>{instructor.lessons.length}</TableCell>
+                  <TableCell>{(instructor.lessons || []).join(', ')}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -116,9 +155,14 @@ const InstructorAPIComponent = () => {
           onChange={(e) => setPassword(e.target.value)}
         />
         <TextField
-          label="Name"  // Add this line
+          label="Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
+        />
+        <TextField
+          label="Lesson IDs (comma-separated)"
+          value={lessonIds}
+          onChange={(e) => setLessonIds(e.target.value)}
         />
         <Button variant="contained" color="primary" onClick={handleCreateInstructor}>
           Add Instructor
@@ -152,6 +196,11 @@ const InstructorAPIComponent = () => {
           label="New Name" 
           value={newName}
           onChange={(e) => setNewName(e.target.value)}
+        />
+        <TextField
+          label="New Lesson IDs (comma-separated)"
+          value={newLessonIds}
+          onChange={(e) => setNewLessonIds(e.target.value)}
         />
         <Button variant="contained" color="primary" onClick={handleUpdateInstructor}>
           Update Instructor

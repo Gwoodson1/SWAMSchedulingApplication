@@ -34,13 +34,18 @@ const ParentAPIComponent = () => {
   }, []);
 
   const handleCreateParent = async () => {
+    if (!username || !password || !name) {
+      setError('Username, Password, and Name are required');
+      return;
+    }
+
     try {
       const newParent = {
         username,
         password,
         name,
         type: 'parent',
-        children_ids: childrenIds.split(',').map(id => parseInt(id.trim()))
+        children_ids: childrenIds ? childrenIds.split(',').map(id => parseInt(id.trim())) : []
       };
       const response = await api.post('/parents', newParent);
       setData([...data, { ...response.data, children: response.data.children || [] }]);
@@ -48,6 +53,7 @@ const ParentAPIComponent = () => {
       setPassword('');
       setName('');
       setChildrenIds('');
+      setError(null);
     } catch (error) {
       setError('Error creating parent');
       console.error('Error creating parent:', error);
@@ -55,12 +61,18 @@ const ParentAPIComponent = () => {
   };
 
   const handleDeleteParent = async () => {
+    if (!deleteUsername) {
+      setError('Username is required to delete');
+      return;
+    }
+
     try {
       const response = await api.get(`/parents/username/${deleteUsername}`);
       if (response.data && response.data.id) {
         await api.delete(`/parents/${response.data.id}`);
         setData(data.filter(parent => parent.id !== response.data.id));
         setDeleteUsername('');
+        setError(null);
       } else {
         setError('Parent not found');
       }
@@ -71,6 +83,11 @@ const ParentAPIComponent = () => {
   };
 
   const handleUpdateParent = async () => {
+    if (!updateUsername) {
+      setError('Username is required to update');
+      return;
+    }
+
     try {
       const updateData = {};
       if (newPassword) updateData.password = newPassword;
@@ -83,6 +100,7 @@ const ParentAPIComponent = () => {
       setNewPassword('');
       setNewName('');
       setNewChildrenIds('');
+      setError(null);
     } catch (error) {
       setError('Error updating parent');
       console.error('Error updating parent:', error);
@@ -92,7 +110,7 @@ const ParentAPIComponent = () => {
   return (
     <div>
       <h1>Parents</h1>
-      {error && <p>{error}</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
       {data.length === 0 && !error ? (
         <p>No parents available</p>
       ) : (

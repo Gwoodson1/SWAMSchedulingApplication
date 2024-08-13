@@ -7,13 +7,15 @@ const SwimmerAPIComponent = () => {
   const [name, setName] = useState('');
   const [level, setLevel] = useState('');
   const [specialNeeds, setSpecialNeeds] = useState('');
-  const [parentId, setParentId] = useState('');
+  const [parentIds, setParentIds] = useState('');
+  const [lessonIds, setLessonIds] = useState('');
   const [deleteSwimmerId, setDeleteSwimmerId] = useState('');
   const [updateSwimmerId, setUpdateSwimmerId] = useState('');
   const [newName, setNewName] = useState('');
   const [newLevel, setNewLevel] = useState('');
   const [newSpecialNeeds, setNewSpecialNeeds] = useState('');
-  const [newParentId, setNewParentId] = useState('');
+  const [newParentIds, setNewParentIds] = useState('');
+  const [newLessonIds, setNewLessonIds] = useState('');
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -22,7 +24,8 @@ const SwimmerAPIComponent = () => {
         const response = await api.get('/swimmers');
         const swimmers = response.data.map(swimmer => ({
           ...swimmer,
-          parents: swimmer.parents || [] // Ensure parents is always an array
+          parents: swimmer.parents || [], // Ensure parents is always an array
+          lessons: swimmer.lessons || [] // Ensure lessons is always an array
         }));
         setData(swimmers);
       } catch (error) {
@@ -35,61 +38,87 @@ const SwimmerAPIComponent = () => {
   }, []);
 
   const handleCreateSwimmer = async () => {
+    if (!name || !level) {
+      setError('Name and Level are required');
+      return;
+    }
+
     try {
       const newSwimmer = {
         name,
         level,
         special_needs: specialNeeds,
-        parent_id: parentId
+        parent_ids: parentIds ? parentIds.split(',').map(id => parseInt(id.trim())) : [],
+        lesson_ids: lessonIds ? lessonIds.split(',').map(id => parseInt(id.trim())) : []
       };
       const response = await api.post('/swimmers', newSwimmer);
-      setData([...data, { ...response.data, parents: response.data.parents || [] }]);
+      setData([...data, { ...response.data, parents: response.data.parents || [], lessons: response.data.lessons || [] }]);
       setName('');
       setLevel('');
       setSpecialNeeds('');
-      setParentId('');
+      setParentIds('');
+      setLessonIds('');
+      setError(null);
     } catch (error) {
       setError('Error creating swimmer');
       console.error('Error creating swimmer:', error);
     }
   };
 
-  const handleDeleteSwimmer = async () => {
-    try {
-      await api.delete(`/swimmers/${deleteSwimmerId}`);
-      setData(data.filter(swimmer => swimmer.id !== parseInt(deleteSwimmerId)));
-      setDeleteSwimmerId('');
-    } catch (error) {
-      setError('Error deleting swimmer');
-      console.error('Error deleting swimmer:', error);
-    }
-  };
-
   const handleUpdateSwimmer = async () => {
+    if (!updateSwimmerId) {
+      setError('Swimmer ID is required to update');
+      return;
+    }
+
     try {
       const updateData = {};
       if (newName) updateData.name = newName;
       if (newLevel) updateData.level = newLevel;
       if (newSpecialNeeds) updateData.special_needs = newSpecialNeeds;
-      if (newParentId) updateData.parent_id = newParentId;
+      if (newParentIds) updateData.parent_ids = newParentIds.split(',').map(id => parseInt(id.trim()));
+      if (newLessonIds) updateData.lesson_ids = newLessonIds.split(',').map(id => parseInt(id.trim()));
 
       const response = await api.put(`/swimmers/${updateSwimmerId}`, updateData);
-      setData(data.map(swimmer => (swimmer.id === response.data.id ? { ...response.data, parents: response.data.parents || [] } : swimmer)));
+      setData(data.map(swimmer => 
+        swimmer.id === response.data.id 
+          ? { ...response.data, parents: response.data.parents || [], lessons: response.data.lessons || [] } 
+          : swimmer
+      ));
       setUpdateSwimmerId('');
       setNewName('');
       setNewLevel('');
       setNewSpecialNeeds('');
-      setNewParentId('');
+      setNewParentIds('');
+      setNewLessonIds('');
+      setError(null);
     } catch (error) {
       setError('Error updating swimmer');
       console.error('Error updating swimmer:', error);
     }
   };
 
+  const handleDeleteSwimmer = async () => {
+    if (!deleteSwimmerId) {
+      setError('Swimmer ID is required to delete');
+      return;
+    }
+
+    try {
+      await api.delete(`/swimmers/${deleteSwimmerId}`);
+      setData(data.filter(swimmer => swimmer.id !== parseInt(deleteSwimmerId)));
+      setDeleteSwimmerId('');
+      setError(null);
+    } catch (error) {
+      setError('Error deleting swimmer');
+      console.error('Error deleting swimmer:', error);
+    }
+  };
+
   return (
     <div>
       <h1>Swimmers</h1>
-      {error && <p>{error}</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
       {data.length === 0 && !error ? (
         <p>No swimmers available</p>
       ) : (
@@ -102,6 +131,7 @@ const SwimmerAPIComponent = () => {
                 <TableCell>Level</TableCell>
                 <TableCell>Special Needs</TableCell>
                 <TableCell>Parent IDs</TableCell>
+                <TableCell>Lesson IDs</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -111,7 +141,8 @@ const SwimmerAPIComponent = () => {
                   <TableCell>{swimmer.name}</TableCell>
                   <TableCell>{swimmer.level}</TableCell>
                   <TableCell>{swimmer.special_needs}</TableCell>
-                  <TableCell>{swimmer.parents.join(', ')}</TableCell>
+                  <TableCell>{(swimmer.parents || []).join(', ')}</TableCell>
+                  <TableCell>{(swimmer.lessons || []).join(', ')}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -136,9 +167,14 @@ const SwimmerAPIComponent = () => {
           onChange={(e) => setSpecialNeeds(e.target.value)}
         />
         <TextField
-          label="Parent ID"
-          value={parentId}
-          onChange={(e) => setParentId(e.target.value)}
+          label="Parent IDs (comma-separated)"
+          value={parentIds}
+          onChange={(e) => setParentIds(e.target.value)}
+        />
+        <TextField
+          label="Lesson IDs (comma-separated)"
+          value={lessonIds}
+          onChange={(e) => setLessonIds(e.target.value)}
         />
         <Button variant="contained" color="primary" onClick={handleCreateSwimmer}>
           Add Swimmer
@@ -178,9 +214,14 @@ const SwimmerAPIComponent = () => {
           onChange={(e) => setNewSpecialNeeds(e.target.value)}
         />
         <TextField
-          label="New Parent ID"
-          value={newParentId}
-          onChange={(e) => setNewParentId(e.target.value)}
+          label="New Parent IDs (comma-separated)"
+          value={newParentIds}
+          onChange={(e) => setNewParentIds(e.target.value)}
+        />
+        <TextField
+          label="New Lesson IDs (comma-separated)"
+          value={newLessonIds}
+          onChange={(e) => setNewLessonIds(e.target.value)}
         />
         <Button variant="contained" color="primary" onClick={handleUpdateSwimmer}>
           Update Swimmer
