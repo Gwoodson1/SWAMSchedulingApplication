@@ -79,19 +79,34 @@ const LessonAPIComponent = () => {
       setError('Lesson ID is required to update');
       return;
     }
-
+  
     try {
       const updateData = {};
-      if (newLessonTime) updateData.lesson_time = newLessonTime;
-      if (newSwimmerIds) updateData.swimmer_ids = newSwimmerIds.split(',').map(id => parseInt(id.trim()));
-      if (newInstructorIds) updateData.instructor_ids = newInstructorIds.split(',').map(id => parseInt(id.trim()));
-
+  
+      // Only include fields with non-empty values
+      if (newLessonTime) {
+        updateData.lesson_time = newLessonTime;
+      }
+  
+      // If swimmerIds field is not empty, process it; otherwise, skip it
+      if (newSwimmerIds.trim()) {
+        updateData.swimmer_ids = newSwimmerIds.split(',').map(id => parseInt(id.trim()));
+      }
+  
+      // If instructorIds field is not empty, process it; otherwise, skip it
+      if (newInstructorIds.trim()) {
+        updateData.instructor_ids = newInstructorIds.split(',').map(id => parseInt(id.trim()));
+      }
+  
       const response = await api.put(`/lessons/${updateLessonId}`, updateData);
-      setData(data.map(lesson => 
-        lesson.id === response.data.id 
-          ? { ...response.data, swimmers: response.data.swimmers || [], instructors: response.data.instructors || [] } 
+  
+      setData(data.map(lesson =>
+        lesson.id === response.data.id
+          ? { ...response.data, swimmers: response.data.swimmers || [], instructors: response.data.instructors || [] }
           : lesson
       ));
+  
+      // Reset form fields
       setUpdateLessonId('');
       setNewLessonTime('');
       setNewSwimmerIds('');
@@ -166,7 +181,7 @@ const LessonAPIComponent = () => {
         </Button>
       </div>
       <div>
-        <h2>Update Lesson</h2>
+        <h2>Update Lesson (include all fields) </h2>
         <TextField
           label="Lesson ID to update"
           value={updateLessonId}

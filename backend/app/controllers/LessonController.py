@@ -1,4 +1,6 @@
+import random
 from .. import db
+from collections import defaultdict
 from ..models import Lesson, Instructor, Swimmer, InstructorLesson, SwimmerLesson
 
 def create_lesson(data):
@@ -78,3 +80,46 @@ def delete_lesson(lesson_id):
         db.session.commit()
     return lesson.to_dict() if lesson else None
 
+import random
+from collections import defaultdict
+from ..models import Lesson, SwimmerLesson, Swimmer
+from .. import db
+
+def assign_times_to_lessons():
+    # Define the available time slots
+    time_slots = ['9:30 - 10:00', '10:00 - 10:30', '10:30 - 11:00', '11:00 - 11:30']
+    
+    # Track the distribution of time slots
+    time_slot_distribution = defaultdict(int)
+    
+    # Fetch all lessons and their related swimmers
+    lessons = Lesson.query.join(SwimmerLesson).join(Swimmer).all()
+    
+    # Shuffle the list of lessons to introduce randomness
+    random.shuffle(lessons)
+
+    for lesson in lessons:
+        # Get the swimmer object associated with this lesson
+        swimmer_lesson = lesson.swimmers[0]  # Assuming one swimmer per lesson
+        swimmer = swimmer_lesson.swimmer  # Access the swimmer object
+        available_times = swimmer.availabilities.split(', ')  # Get swimmer's availabilities
+
+        # Find the least occupied time slot that the swimmer is available for
+        selected_time_slot = None
+        min_assigned = float('inf')
+        
+        # Randomly shuffle available times to vary assignments within each swimmer
+        random.shuffle(available_times)
+
+        for time_slot in available_times:
+            if time_slot in time_slots and time_slot_distribution[time_slot] < min_assigned:
+                selected_time_slot = time_slot
+                min_assigned = time_slot_distribution[time_slot]
+
+        # Assign the selected time slot if found
+        if selected_time_slot:
+            lesson.lesson_time = selected_time_slot
+            time_slot_distribution[selected_time_slot] += 1
+
+    # Commit the changes to the database
+    db.session.commit()
