@@ -5,16 +5,29 @@ import { TextField, Button, Table, TableBody, TableCell, TableContainer, TableHe
 const SwimmerAPIComponent = () => {
   const [data, setData] = useState([]);
   const [name, setName] = useState('');
-  const [level, setLevel] = useState('');
-  const [specialNeeds, setSpecialNeeds] = useState('');
-  const [parentIds, setParentIds] = useState('');
+  const [gender, setGender] = useState('');
+  const [age, setAge] = useState('');
+  const [language, setLanguage] = useState('');
+  const [instructorPreference, setInstructorPreference] = useState('');
+  const [availabilities, setAvailabilities] = useState('');
+  const [specialNeedsInfo, setSpecialNeedsInfo] = useState('');
+  const [swimExperience, setSwimExperience] = useState('');
+  const [experienceDetails, setExperienceDetails] = useState('');
+  const [previousSwamLessons, setPreviousSwamLessons] = useState('');
+  const [newInstructorExplanation, setNewInstructorExplanation] = useState('');
   const [lessonIds, setLessonIds] = useState('');
   const [deleteSwimmerId, setDeleteSwimmerId] = useState('');
   const [updateSwimmerId, setUpdateSwimmerId] = useState('');
   const [newName, setNewName] = useState('');
-  const [newLevel, setNewLevel] = useState('');
-  const [newSpecialNeeds, setNewSpecialNeeds] = useState('');
-  const [newParentIds, setNewParentIds] = useState('');
+  const [newGender, setNewGender] = useState('');
+  const [newAge, setNewAge] = useState('');
+  const [newLanguage, setNewLanguage] = useState('');
+  const [newInstructorPreference, setNewInstructorPreference] = useState('');
+  const [newAvailabilities, setNewAvailabilities] = useState('');
+  const [newSpecialNeedsInfo, setNewSpecialNeedsInfo] = useState('');
+  const [newSwimExperience, setNewSwimExperience] = useState('');
+  const [newExperienceDetails, setNewExperienceDetails] = useState('');
+  const [newPreviousSwamLessons, setNewPreviousSwamLessons] = useState('');
   const [newLessonIds, setNewLessonIds] = useState('');
   const [error, setError] = useState(null);
 
@@ -38,26 +51,31 @@ const SwimmerAPIComponent = () => {
   }, []);
 
   const handleCreateSwimmer = async () => {
-    if (!name || !level) {
-      setError('Name and Level are required');
+    if (!name || !age || !language) {
+      setError('Name, Age, and Language are required');
       return;
     }
 
     try {
       const newSwimmer = {
         name,
-        level,
-        special_needs: specialNeeds,
-        parent_ids: parentIds ? parentIds.split(',').map(id => parseInt(id.trim())) : [],
+        gender,
+        age,
+        language,
+        instructor_preference: instructorPreference,
+        availabilities,
+        special_needs_info: specialNeedsInfo,
+        swim_experience: swimExperience,
+        experience_details: experienceDetails,
+        previous_swam_lessons: previousSwamLessons,
+        new_instructor_explanation: newInstructorExplanation,
         lesson_ids: lessonIds ? lessonIds.split(',').map(id => parseInt(id.trim())) : []
       };
       const response = await api.post('/swimmers', newSwimmer);
       setData([...data, { ...response.data, parents: response.data.parents || [], lessons: response.data.lessons || [] }]);
-      setName('');
-      setLevel('');
-      setSpecialNeeds('');
-      setParentIds('');
-      setLessonIds('');
+      setName(''); setGender(''); setAge(''); setLanguage(''); setInstructorPreference('');
+      setAvailabilities(''); setSpecialNeedsInfo(''); setSwimExperience(''); setExperienceDetails('');
+      setPreviousSwamLessons(''); setNewInstructorExplanation(''); setLessonIds('');
       setError(null);
     } catch (error) {
       setError('Error creating swimmer');
@@ -74,9 +92,16 @@ const SwimmerAPIComponent = () => {
     try {
       const updateData = {};
       if (newName) updateData.name = newName;
-      if (newLevel) updateData.level = newLevel;
-      if (newSpecialNeeds) updateData.special_needs = newSpecialNeeds;
-      if (newParentIds) updateData.parent_ids = newParentIds.split(',').map(id => parseInt(id.trim()));
+      if (newGender) updateData.gender = newGender;
+      if (newAge) updateData.age = newAge;
+      if (newLanguage) updateData.language = newLanguage;
+      if (newInstructorPreference) updateData.instructor_preference = newInstructorPreference;
+      if (newAvailabilities) updateData.availabilities = newAvailabilities;
+      if (newSpecialNeedsInfo) updateData.special_needs_info = newSpecialNeedsInfo;
+      if (newSwimExperience) updateData.swim_experience = newSwimExperience;
+      if (newExperienceDetails) updateData.experience_details = newExperienceDetails;
+      if (newPreviousSwamLessons) updateData.previous_swam_lessons = newPreviousSwamLessons;
+      if (newInstructorExplanation) updateData.new_instructor_explanation = newInstructorExplanation;
       if (newLessonIds) updateData.lesson_ids = newLessonIds.split(',').map(id => parseInt(id.trim()));
 
       const response = await api.put(`/swimmers/${updateSwimmerId}`, updateData);
@@ -85,12 +110,10 @@ const SwimmerAPIComponent = () => {
           ? { ...response.data, parents: response.data.parents || [], lessons: response.data.lessons || [] } 
           : swimmer
       ));
-      setUpdateSwimmerId('');
-      setNewName('');
-      setNewLevel('');
-      setNewSpecialNeeds('');
-      setNewParentIds('');
-      setNewLessonIds('');
+      setUpdateSwimmerId(''); setNewName(''); setNewGender(''); setNewAge(''); setNewLanguage('');
+      setNewInstructorPreference(''); setNewAvailabilities(''); setNewSpecialNeedsInfo('');
+      setNewSwimExperience(''); setNewExperienceDetails(''); setNewPreviousSwamLessons('');
+      setNewInstructorExplanation(''); setNewLessonIds(''); 
       setError(null);
     } catch (error) {
       setError('Error updating swimmer');
@@ -122,60 +145,41 @@ const SwimmerAPIComponent = () => {
       {data.length === 0 && !error ? (
         <p>No swimmers available</p>
       ) : (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell>Level</TableCell>
-                <TableCell>Special Needs</TableCell>
-                <TableCell>Parent IDs</TableCell>
-                <TableCell>Lesson IDs</TableCell>
+ // Modify the table to display only ID, Name, and Lesson IDs
+      <TableContainer component={Paper}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>ID</TableCell>
+              <TableCell>Name</TableCell>
+              <TableCell>Lesson IDs</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {data.map((swimmer) => (
+              <TableRow key={swimmer.id}>
+                <TableCell>{swimmer.id}</TableCell>
+                <TableCell>{swimmer.name}</TableCell>
+                <TableCell>{(swimmer.lessons || []).join(', ')}</TableCell>
               </TableRow>
-            </TableHead>
-            <TableBody>
-              {data.map((swimmer) => (
-                <TableRow key={swimmer.id}>
-                  <TableCell>{swimmer.id}</TableCell>
-                  <TableCell>{swimmer.name}</TableCell>
-                  <TableCell>{swimmer.level}</TableCell>
-                  <TableCell>{swimmer.special_needs}</TableCell>
-                  <TableCell>{(swimmer.parents || []).join(', ')}</TableCell>
-                  <TableCell>{(swimmer.lessons || []).join(', ')}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>      )}
       <div>
         <h2>Add Swimmer</h2>
-        <TextField
-          label="Name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <TextField
-          label="Level"
-          value={level}
-          onChange={(e) => setLevel(e.target.value)}
-        />
-        <TextField
-          label="Special Needs"
-          value={specialNeeds}
-          onChange={(e) => setSpecialNeeds(e.target.value)}
-        />
-        <TextField
-          label="Parent IDs (comma-separated)"
-          value={parentIds}
-          onChange={(e) => setParentIds(e.target.value)}
-        />
-        <TextField
-          label="Lesson IDs (comma-separated)"
-          value={lessonIds}
-          onChange={(e) => setLessonIds(e.target.value)}
-        />
+        <TextField label="Name" value={name} onChange={(e) => setName(e.target.value)} />
+        <TextField label="Gender" value={gender} onChange={(e) => setGender(e.target.value)} />
+        <TextField label="Age" value={age} onChange={(e) => setAge(e.target.value)} />
+        <TextField label="Language" value={language} onChange={(e) => setLanguage(e.target.value)} />
+        <TextField label="Instructor Preference" value={instructorPreference} onChange={(e) => setInstructorPreference(e.target.value)} />
+        <TextField label="Availabilities" value={availabilities} onChange={(e) => setAvailabilities(e.target.value)} />
+        <TextField label="Special Needs Info" value={specialNeedsInfo} onChange={(e) => setSpecialNeedsInfo(e.target.value)} />
+        <TextField label="Swim Experience" value={swimExperience} onChange={(e) => setSwimExperience(e.target.value)} />
+        <TextField label="Experience Details" value={experienceDetails} onChange={(e) => setExperienceDetails(e.target.value)} />
+        <TextField label="Previous Swam Lessons" value={previousSwamLessons} onChange={(e) => setPreviousSwamLessons(e.target.value)} />
+        <TextField label="New Instructor Explanation" value={newInstructorExplanation} onChange={(e) => setNewInstructorExplanation(e.target.value)} />
+        <TextField label="Lesson IDs (comma-separated)" value={lessonIds} onChange={(e) => setLessonIds(e.target.value)} />
         <Button variant="contained" color="primary" onClick={handleCreateSwimmer}>
           Add Swimmer
         </Button>
@@ -198,31 +202,18 @@ const SwimmerAPIComponent = () => {
           value={updateSwimmerId}
           onChange={(e) => setUpdateSwimmerId(e.target.value)}
         />
-        <TextField
-          label="New Name"
-          value={newName}
-          onChange={(e) => setNewName(e.target.value)}
-        />
-        <TextField
-          label="New Level"
-          value={newLevel}
-          onChange={(e) => setNewLevel(e.target.value)}
-        />
-        <TextField
-          label="New Special Needs"
-          value={newSpecialNeeds}
-          onChange={(e) => setNewSpecialNeeds(e.target.value)}
-        />
-        <TextField
-          label="New Parent IDs (comma-separated)"
-          value={newParentIds}
-          onChange={(e) => setNewParentIds(e.target.value)}
-        />
-        <TextField
-          label="New Lesson IDs (comma-separated)"
-          value={newLessonIds}
-          onChange={(e) => setNewLessonIds(e.target.value)}
-        />
+        <TextField label="New Name" value={newName} onChange={(e) => setNewName(e.target.value)} />
+        <TextField label="New Gender" value={newGender} onChange={(e) => setNewGender(e.target.value)} />
+        <TextField label="New Age" value={newAge} onChange={(e) => setNewAge(e.target.value)} />
+        <TextField label="New Language" value={newLanguage} onChange={(e) => setNewLanguage(e.target.value)} />
+        <TextField label="New Instructor Preference" value={newInstructorPreference} onChange={(e) => setNewInstructorPreference(e.target.value)} />
+        <TextField label="New Availabilities" value={newAvailabilities} onChange={(e) => setNewAvailabilities(e.target.value)} />
+        <TextField label="New Special Needs Info" value={newSpecialNeedsInfo} onChange={(e) => setNewSpecialNeedsInfo(e.target.value)} />
+        <TextField label="New Swim Experience" value={newSwimExperience} onChange={(e) => setNewSwimExperience(e.target.value)} />
+        <TextField label="New Experience Details" value={newExperienceDetails} onChange={(e) => setNewExperienceDetails(e.target.value)} />
+        <TextField label="New Previous Swam Lessons" value={newPreviousSwamLessons} onChange={(e) => setNewPreviousSwamLessons(e.target.value)} />
+        <TextField label="New Instructor Explanation" value={newInstructorExplanation} onChange={(e) => setNewInstructorExplanation(e.target.value)} />
+        <TextField label="New Lesson IDs (comma-separated)" value={newLessonIds} onChange={(e) => setNewLessonIds(e.target.value)} />
         <Button variant="contained" color="primary" onClick={handleUpdateSwimmer}>
           Update Swimmer
         </Button>
