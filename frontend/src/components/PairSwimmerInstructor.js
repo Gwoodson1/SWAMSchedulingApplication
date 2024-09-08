@@ -83,6 +83,7 @@ function PairSwimmerInstructor() {
           // Optionally, clear selections
           setSelectedSwimmer(null);
           setSelectedInstructor(null);
+          setInstructorSearchQuery('');
         }
       })
       .catch(error => {
@@ -277,7 +278,9 @@ function PairSwimmerInstructor() {
                 onClick={() => {
                   setSelectedSwimmer(swimmer);
                   if (swimmer.previous_instructor) {
-                    setInstructorSearchQuery(swimmer.previous_instructor);  // Automatically set instructor search if previous_instructor exists
+                    setInstructorSearchQuery(swimmer.previous_instructor); 
+                  } else {
+                    setInstructorSearchQuery(''); 
                   }
                 }}
                 style={{
