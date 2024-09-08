@@ -1,28 +1,64 @@
 import os
-from flask import Flask
-from flask_cors import CORS
-from flask_sqlalchemy import SQLAlchemy
-from backend.app.models import db
+from . import db
+import pandas as pd
+from io import BytesIO
+from .models import Lesson, Swimmer, Instructor, SwimmerLesson, InstructorLesson
+import csv
+from werkzeug.utils import secure_filename
 
-def create_app():
-    app = Flask(__name__, static_folder='../../frontend/build', static_url_path='/')
+ALLOWED_EXTENSIONS = {'csv', 'xlsx'}
 
-    # Enable CORS for the entire app
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-    # Configuration for SQLAlchemy
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///yourdatabase.db'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+def process_uploaded_file(filepath):
+    if filepath.endswith('.csv'):
+        df = pd.read_csv(filepath)
+    elif filepath.endswith('.xlsx'):
+        df = pd.read_excel(filepath)
+    else:
+        raise ValueError("Unsupported file format")
 
-    # Initialize the database with the app
-    db.init_app(app)
+    data = df.to_dict(orient='records')
+    return data
+
+def save_file(file, upload_folder):
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        filepath = os.path.join(upload_folder, filename)
+        file.save(filepath)
+        return filepath
+    else:
+        raise ValueError("Invalid file type")
     
-    # Create tables (if they don't exist)
-    with app.app_context():
-        db.create_all()
+def export_lessons_to_file(file_type='csv'):
+    # Query lessons along with related swimmer and instructor data
+    lessons = db.session.query(Lesson).join(SwimmerLesson).join(Swimmer).join(InstructorLesson).join(Instructor).all()
 
-    # Import and register the API blueprint
-    from .views import api_bp
-    app.register_blueprint(api_bp, url_prefix='/api')
+    # Prepare the data for export
+    data = []
+    for lesson in lessons:
+        for swimmer_lesson in lesson.swimmers:
+            for instructor_lesson in lesson.instructors:
+                data.append({
+                    'Lesson Time': lesson.lesson_time or '',  # Replace None with an empty string
+                    'Swimmer Name': swimmer_lesson.swimmer.name,
+                    'Instructor Name': instructor_lesson.instructor.name
+                })
 
-    return app
+    if file_type == 'xlsx':
+        # Export to Excel
+        df = pd.DataFrame(data)
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
+            df.to_excel(writer, index=False)
+        return output.getvalue(), 'lessons.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    
+    else:
+        # Export to CSV
+        output = BytesIO()
+        writer = csv.DictWriter(output, fieldnames=['Lesson Time', 'Swimmer Name', 'Instructor Name'])
+        writer.writeheader()
+        writer.writerows(data)
+        output.seek(0)  # Move the cursor to the start of the file
+        return output.getvalue(), 'lessons.csv', 'text/csv'
