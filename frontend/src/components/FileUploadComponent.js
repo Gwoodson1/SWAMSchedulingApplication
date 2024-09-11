@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Typography, FormControl, InputLabel, Select, MenuItem, Button, TextField, Box } from '@mui/material';
 
-function FileUpload() {
+function FileUploadComponent() {
   const [file, setFile] = useState(null);
   const [uploadType, setUploadType] = useState('swimmer');
   const [message, setMessage] = useState('');
@@ -121,4 +121,4 @@ const styles = {
   },
 };
 
-export default FileUpload;
+export default FileUploadComponent
